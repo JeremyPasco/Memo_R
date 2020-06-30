@@ -202,3 +202,39 @@ ggplot(mpg, aes(x=class, y=hwy)) +
   geom_boxplot() +
   coord_polar()
 ```
+
+# Travailler avec MySQL
+
+``` r
+# Installer RMySQL (nécessaire que la 1e fois)
+install.packages("RMySQL")
+
+# Connexion à la base
+library(RMySQL)
+library(tidyverse)
+con <- dbConnect(MySQL(), host="localhost", user="root", password="root", dbname="evaluation")
+
+# Accès à une table
+tbl(con, "question")
+
+# On peut chainer avec les opérations classiques
+tbl(con, "reponse") %>% 
+  filter(!is.na(score)) %>% 
+  head(10)
+
+# Si on veut stocker les données localement il faut finir par un collect()
+data <- tbl(con, "reponse") %>% 
+  filter(!is.na(score)) %>% 
+  head(10) %>% 
+  collect()
+
+# Tout ce qui est placé avant collect est converti en équivalent SQL
+# On peut afficher cet équivalent avec show_query()
+tbl(con, "reponse") %>% 
+  filter(!is.na(score)) %>% 
+  head(10) %>% 
+  show_query()
+
+# On peut aussi exécuter nos propres requêtes avec sql() :
+tbl(con, sql("SELECT * FROM question WHERE id < 10"))
+```
