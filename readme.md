@@ -237,4 +237,18 @@ tbl(con, "reponse") %>%
 
 # On peut aussi exécuter nos propres requêtes avec sql() :
 tbl(con, sql("SELECT * FROM question WHERE id < 10"))
+
+
+
+# Pour insérer des valeurs dans la requête de façon sécurisée :
+#♥ on définit les variables nécessaires
+id_min <- 3
+id_max <- 10
+
+# On prépare la requête à l'aide de glue_sql, les variables entre  {} seront insérées de façon protégées
+library(glue)
+req <- glue_sql("SELECT * FROM question WHERE id <= {id_max} AND id >= {id_min}", .con = con)
+
+# Puis on utilise cette requête via tbl() + sql() comme auparavent
+tbl(con, sql(req))
 ```
