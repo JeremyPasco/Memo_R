@@ -241,7 +241,7 @@ tbl(con, sql("SELECT * FROM question WHERE id < 10"))
 
 
 # Pour insérer des valeurs dans la requête de façon sécurisée :
-#♥ on définit les variables nécessaires
+# on définit les variables nécessaires
 id_min <- 3
 id_max <- 10
 
@@ -251,4 +251,46 @@ req <- glue_sql("SELECT * FROM question WHERE id <= {id_max} AND id >= {id_min}"
 
 # Puis on utilise cette requête via tbl() + sql() comme auparavent
 tbl(con, sql(req))
+
+# Gérer l'encodage des données réceptionnées
+# Ex : exiger que les string soient encodées en UTF8
+# A fair ejuste après la connexion pour affecter toutes les requêtes qui suivent
+dbGetQuery(con, "SET NAMES 'utf8'")
+
+# Se déconnecter
+dbDisconnect(con)
+```
+
+# Shiny
+
+``` r
+# Se déconnecter automatiquement à la fermeture d'une application shiny
+# A placer dans la partie server, au sein de function(input, output) { ... }
+  onStop(function(){
+    dbDisconnect(con)
+    print("Je suis déconnecté")
+  })
+
+# Modifier dynamiquement les valeurs proposées dans un select
+
+# 1) Créer un selectInput côté ui, exemple : 
+selectInput("testInput", "Carriers", c("A", "B", "C"))
+
+# 2) Ajouter la variable session à la fonction server :
+function(input, output, session){ ... }
+
+# 3) Déclencher la mise à jour des valeurs de select via un observeEvent
+# Ex : ici si un input$truc est modifié, les choix de notre select sont mis à jour
+observeEvent(input$truc, {
+    
+    tbl(con, "question")
+      
+    
+    mes_choix <- # mettre ici de quoi générer les nouveaux choix du selectInput
+    
+    updateSelectInput(session, "testInput", choices = mes_choix)
+  })
+
+# Il est possible de déclencher la mise à jour à la suite de modification de plusieurs inputs :
+observeEvent(c(input$x, input$y, input$z), { ... })
 ```
